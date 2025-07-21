@@ -19,9 +19,6 @@ endif()
 SET(CMAKE_CXX_FLAGS "-O2 -g ${CMAKE_CXX_FLAGS}")
 add_compile_definitions(G2O_USE_VENDORED_CERES)
 
-# Find missing symbols during link time
-add_link_options(-Wl,--no-undefined)
-
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -78,18 +75,16 @@ ament_target_dependencies(graph_based_slam_component
   ndt_omp_ros2
 )
 
-target_link_libraries(graph_based_slam_component
-  g2o::core
-  g2o::types_slam3d
-  g2o::solver_eigen
-)
-
 add_executable(graph_based_slam_node
 src/graph_based_slam_node.cpp
 )
 
 target_link_libraries(graph_based_slam_node
   graph_based_slam_component
+  ${PCL_LIBRARIES}
+  g2o::core
+  g2o::types_slam3d
+  g2o::solver_eigen
 )
 
 ament_target_dependencies(graph_based_slam_node
@@ -132,4 +127,19 @@ install(TARGETS
 )
 
 ament_export_include_directories(include)
+ament_export_dependencies(
+  rclcpp 
+  rclcpp_components 
+  tf2_ros 
+  tf2_eigen
+  tf2_geometry_msgs
+  tf2_sensor_msgs
+  pcl_conversions
+  geometry_msgs 
+  sensor_msgs
+  nav_msgs
+  std_srvs
+  lidarslam_msgs
+  ndt_omp_ros2
+)
 ament_package()
