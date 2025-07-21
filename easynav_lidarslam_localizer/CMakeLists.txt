@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(easynav_lidarlam_localizer)
+project(easynav_lidarslam_localizer)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -16,7 +16,19 @@ find_package(easynav_core REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(scanmatcher REQUIRED)
 find_package(graph_based_slam REQUIRED)
+find_package(PCL REQUIRED)
+find_package(OpenMP)
+find_package(g2o REQUIRED
+COMPONENTS
+g2o::core
+g2o::types_slam3d
+g2o::solver_eigen
+)
 
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 set(dependencies
   rclcpp
@@ -28,14 +40,14 @@ set(dependencies
   graph_based_slam
 )
 
-add_library(lidarslam_localizer SHARED
+add_library(${PROJECT_NAME} SHARED
   src/easynav_lidarslam_localizer/LidarSlamLocalizer.cpp
 )
-target_include_directories(lidarslam_localizer PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(lidarslam_localizer
+target_link_libraries(${PROJECT_NAME}
   easynav_core::easynav_core
   pluginlib::pluginlib
   ${geographic_msgs_TARGETS}
@@ -45,8 +57,13 @@ target_link_libraries(lidarslam_localizer
   ${GeographicLib_LIBRARIES}
   # scanmatcher::scanmatcher
   # graph_based_slam::graph_based_slam
+  ${PCL_LIBRARIES}
+  g2o::core
+  g2o::types_slam3d
+  g2o::solver_eigen
 )
-ament_target_dependencies(lidarslam_localizer scanmatcher graph_based_slam)
+ament_target_dependencies(${PROJECT_NAME} scanmatcher graph_based_slam)
+target_compile_definitions(${PROJECT_NAME} PRIVATE "GS_SM_BUILDING_DLL")
 
 
 install(DIRECTORY include/
@@ -54,7 +71,7 @@ install(DIRECTORY include/
 )
 
 install(TARGETS
-  lidarslam_localizer
+${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -70,7 +87,7 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(
-  lidarslam_localizer
+  ${PROJECT_NAME}
 )
 ament_export_targets(
   export_${PROJECT_NAME}

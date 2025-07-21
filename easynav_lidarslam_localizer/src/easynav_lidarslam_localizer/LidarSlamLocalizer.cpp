@@ -37,10 +37,18 @@ std::expected<void, std::string> LidarSlamLocalizer::on_initialize()
   odom_.header.frame_id = "map";
   odom_.child_frame_id = "base_link";
 
-  rclcpp::NodeOptions options;
-  options.use_intra_process_comms(true);
-  gb_slam_ = std::make_shared<graphslam::GraphBasedSlamComponent>(options);
-  sm_comp_ = std::make_shared<graphslam::ScanMatcherComponent>(options);
+  rclcpp::NodeOptions options_gb;
+  options_gb.use_intra_process_comms(true);
+  gb_slam_ = std::make_shared<graphslam::GraphBasedSlamComponent>(options_gb);
+
+  rclcpp::NodeOptions options_sm;
+  options_sm.use_intra_process_comms(true);
+   std::vector<std::string> remappings = {
+    "/input_cloud:=/front_laser_sensor/points",
+    "/imu:=/imu/data"
+  };
+  options_sm.arguments(remappings);
+  sm_comp_ = std::make_shared<graphslam::ScanMatcherComponent>(options_sm);
 
   return {};
 }

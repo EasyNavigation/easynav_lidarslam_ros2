@@ -34,7 +34,7 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2_ros/static_transform_broadcaster.h"
 #include "sensor_msgs/msg/imu.hpp"
-#include <GeographicLib/UTMUPS.hpp>
+
 
 namespace easynav
 {

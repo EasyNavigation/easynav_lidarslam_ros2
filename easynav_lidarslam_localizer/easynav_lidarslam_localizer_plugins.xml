@@ -1,6 +1,6 @@
 <class_libraries>
-  <library path="lidarslam_localizer">
-    <class name="easynav_lidarlam_localizer/LidarSlamLocalizer"  type="easynav::LidarSlamLocalizer" base_class_type="easynav::LocalizerMethodBase">
+  <library path="easynav_lidarslam_localizer">
+    <class name="easynav_lidarslam_localizer/LidarSlamLocalizer"  type="easynav::LidarSlamLocalizer" base_class_type="easynav::LocalizerMethodBase">
       <description>
       A LidarSlam implementation for the Localizer Method.
       </description>
