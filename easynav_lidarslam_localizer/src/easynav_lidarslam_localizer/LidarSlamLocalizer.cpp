@@ -31,6 +31,7 @@ namespace easynav
 std::expected<void, std::string> LidarSlamLocalizer::on_initialize()
 {
   auto node = get_node();
+  const auto & plugin_name = get_plugin_name();
 
   // Initialize the odometry message
   odom_.header.stamp = get_node()->now();
@@ -41,11 +42,17 @@ std::expected<void, std::string> LidarSlamLocalizer::on_initialize()
   options_gb.use_intra_process_comms(true);
   gb_slam_ = std::make_shared<graphslam::GraphBasedSlamComponent>(options_gb);
 
+  std::string input_cloud, imu;
+  node->declare_parameter(plugin_name + ".input_cloud", input_cloud);
+  node->declare_parameter(plugin_name + ".imu", imu);
+  node->get_parameter(plugin_name + ".input_cloud", input_cloud);
+  node->get_parameter(plugin_name + ".imu", imu);
+
   rclcpp::NodeOptions options_sm;
   options_sm.use_intra_process_comms(true);
    std::vector<std::string> remappings = {
-    "/input_cloud:=/front_laser_sensor/points",
-    "/imu:=/imu/data"
+    "/input_cloud:=" + input_cloud,
+    "/imu:=" + imu
   };
   options_sm.arguments(remappings);
   sm_comp_ = std::make_shared<graphslam::ScanMatcherComponent>(options_sm);
@@ -60,8 +67,8 @@ void LidarSlamLocalizer::update_rt(NavState & nav_state)
 
 void LidarSlamLocalizer::update(NavState & nav_state)
 {
-  rclcpp::spin_some(gb_slam_);
   rclcpp::spin_some(sm_comp_);
+  rclcpp::spin_some(gb_slam_);
 }
 
 }  // namespace easynav
