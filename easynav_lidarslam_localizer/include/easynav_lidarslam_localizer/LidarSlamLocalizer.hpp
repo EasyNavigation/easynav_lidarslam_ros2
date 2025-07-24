@@ -101,6 +101,8 @@ private:
    */
   nav_msgs::msg::Odometry odom_;
 
+  std::string robot_frame_;
+
   std::shared_ptr<graphslam::GraphBasedSlamComponent> gb_slam_;
   std::shared_ptr<graphslam::ScanMatcherComponent> sm_comp_;
 };
