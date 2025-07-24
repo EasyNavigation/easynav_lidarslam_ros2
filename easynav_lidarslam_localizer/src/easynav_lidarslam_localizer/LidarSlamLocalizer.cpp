@@ -33,24 +33,28 @@ std::expected<void, std::string> LidarSlamLocalizer::on_initialize()
   auto node = get_node();
   const auto & plugin_name = get_plugin_name();
 
+  robot_frame_ = "base_link";
+  std::string input_cloud, imu;
+  node->declare_parameter(plugin_name + ".input_cloud", input_cloud);
+  node->declare_parameter(plugin_name + ".imu", imu);
+  node->declare_parameter(plugin_name + ".robot_frame", robot_frame_);
+  node->get_parameter(plugin_name + ".input_cloud", input_cloud);
+  node->get_parameter(plugin_name + ".imu", imu);
+  node->get_parameter(plugin_name + ".robot_frame", robot_frame_);
+
+
   // Initialize the odometry message
   odom_.header.stamp = get_node()->now();
   odom_.header.frame_id = "map";
-  odom_.child_frame_id = "base_link";
+  odom_.child_frame_id = robot_frame_;
 
   rclcpp::NodeOptions options_gb;
   options_gb.use_intra_process_comms(true);
   gb_slam_ = std::make_shared<graphslam::GraphBasedSlamComponent>(options_gb);
 
-  std::string input_cloud, imu;
-  node->declare_parameter(plugin_name + ".input_cloud", input_cloud);
-  node->declare_parameter(plugin_name + ".imu", imu);
-  node->get_parameter(plugin_name + ".input_cloud", input_cloud);
-  node->get_parameter(plugin_name + ".imu", imu);
-
   rclcpp::NodeOptions options_sm;
   options_sm.use_intra_process_comms(true);
-   std::vector<std::string> remappings = {
+  std::vector<std::string> remappings = {
     "/input_cloud:=" + input_cloud,
     "/imu:=" + imu
   };
@@ -69,6 +73,23 @@ void LidarSlamLocalizer::update(NavState & nav_state)
 {
   rclcpp::spin_some(sm_comp_);
   rclcpp::spin_some(gb_slam_);
+
+  geometry_msgs::msg::TransformStamped tf_msg;
+  try {
+    tf_msg = RTTFBuffer::getInstance()->lookupTransform(
+      "map", robot_frame_, tf2::TimePointZero, tf2::durationFromSec(0.0));
+  } catch (const tf2::TransformException & ex) {
+    RCLCPP_WARN(get_node()->get_logger(), "LidarSlamLocalizer::update: TF failed: %s", ex.what());
+    return;
+  }
+
+  odom_.header.stamp = tf_msg.header.stamp;
+  odom_.pose.pose.position.x = tf_msg.transform.translation.x;
+  odom_.pose.pose.position.y = tf_msg.transform.translation.y;
+  odom_.pose.pose.position.z = tf_msg.transform.translation.z;
+  odom_.pose.pose.orientation = tf_msg.transform.rotation;
+
+  nav_state.set("robot_pose", odom_);
 }
 
 }  // namespace easynav
