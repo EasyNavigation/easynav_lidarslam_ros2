@@ -79,6 +79,12 @@ ScanMatcherComponent::ScanMatcherComponent(const rclcpp::NodeOptions & options)
   get_parameter("use_imu", use_imu_);
   declare_parameter("debug_flag", false);
   get_parameter("debug_flag", debug_flag_);
+  declare_parameter("tf_namespace", tf_namespace_);
+  get_parameter("tf_namespace", tf_namespace_);
+
+  global_frame_id_ = tf_namespace_ + global_frame_id_;
+  robot_frame_id_ = tf_namespace_ + robot_frame_id_;
+  odom_frame_id_ = tf_namespace_ + odom_frame_id_;
 
   std::cout << "registration_method:" << registration_method_ << std::endl;
   std::cout << "ndt_resolution[m]:" << ndt_resolution << std::endl;
