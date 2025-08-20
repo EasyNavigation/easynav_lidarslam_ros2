@@ -337,14 +337,20 @@ void ScanMatcherComponent::receiveCloud(
   Eigen::Matrix4f sim_trans = getTransformation(current_pose_stamped_.pose);
 
   if (use_odom_) {
-    geometry_msgs::msg::TransformStamped odom_trans;
-    try {
-      odom_trans = tfbuffer_.lookupTransform(
-        odom_frame_id_, robot_frame_id_, tf2_ros::fromMsg(
-          stamp));
-    } catch (tf2::TransformException & e) {
-      RCLCPP_ERROR(this->get_logger(), "%s", e.what());
-    }
+      geometry_msgs::msg::TransformStamped odom_trans;
+      try {
+        rclcpp::Duration tolerance = rclcpp::Duration::from_seconds(0.2);
+        rclcpp::Time lookup_time = stamp - tolerance;
+
+        odom_trans = tfbuffer_.lookupTransform(
+            odom_frame_id_, robot_frame_id_,
+            tf2_ros::fromMsg(lookup_time),
+            tf2::durationFromSec(0.5));
+      }
+      catch (tf2::TransformException &e) {
+        RCLCPP_WARN(this->get_logger(), "Odom TF error: %s", e.what());
+        return;
+      }
     Eigen::Affine3d odom_affine = tf2::transformToEigen(odom_trans);
     Eigen::Matrix4f odom_mat = odom_affine.matrix().cast<float>();
     if (previous_odom_mat_ != Eigen::Matrix4f::Identity()) {
