@@ -45,8 +45,8 @@ std::expected<void, std::string> LidarSlamLocalizer::on_initialize()
 
   // Initialize the odometry message
   odom_.header.stamp = get_node()->now();
-  odom_.header.frame_id = get_tf_ns() + "map";
-  odom_.child_frame_id = get_tf_ns() + robot_frame_;
+  odom_.header.frame_id = get_tf_prefix() + "map";
+  odom_.child_frame_id = get_tf_prefix() + robot_frame_;
 
   rclcpp::NodeOptions options_gb;
   options_gb.use_intra_process_comms(true);

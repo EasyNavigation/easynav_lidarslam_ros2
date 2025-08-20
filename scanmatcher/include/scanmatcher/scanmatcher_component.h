@@ -156,7 +156,7 @@ private:
     bool use_imu_ {false};
     bool debug_flag_ {false};
   
-    std::string tf_namespace_;
+    std::string tf_prefix_;
   
     // map
     Eigen::Vector3d previous_position_;
