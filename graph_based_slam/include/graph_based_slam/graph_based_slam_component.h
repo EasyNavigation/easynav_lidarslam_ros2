@@ -142,7 +142,6 @@ private:
     std::vector < LoopEdge > loop_edges_;
 
     bool debug_flag_ {false};
-    std::string tf_namespace_;
 
   };
 }

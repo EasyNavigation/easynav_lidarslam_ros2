@@ -42,8 +42,6 @@ GraphBasedSlamComponent::GraphBasedSlamComponent(const rclcpp::NodeOptions & opt
   get_parameter("use_save_map_in_loop", use_save_map_in_loop_);
   declare_parameter("debug_flag", false);
   get_parameter("debug_flag", debug_flag_);
-  declare_parameter("tf_namespace", std::string(""));
-  get_parameter("tf_namespace", tf_namespace_);
 
   std::cout << "registration_method:" << registration_method << std::endl;
   std::cout << "voxel_leaf_size[m]:" << voxel_leaf_size << std::endl;
@@ -325,7 +323,7 @@ void GraphBasedSlamComponent::doPoseAdjustment(
   lidarslam_msgs::msg::MapArray modified_map_array_msg;
   modified_map_array_msg.header = map_array_msg.header;
   nav_msgs::msg::Path path;
-  path.header.frame_id = tf_namespace_ + "map";
+  path.header.frame_id = "map";
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>());
   for (int i = 0; i < submaps_size; i++) {
     g2o::VertexSE3 * vertex_se3 = static_cast<g2o::VertexSE3 *>(optimizer.vertex(i));
@@ -366,7 +364,7 @@ void GraphBasedSlamComponent::doPoseAdjustment(
 
   sensor_msgs::msg::PointCloud2::SharedPtr map_msg_ptr(new sensor_msgs::msg::PointCloud2);
   pcl::toROSMsg(*map_ptr, *map_msg_ptr);
-  map_msg_ptr->header.frame_id = tf_namespace_ + "map";
+  map_msg_ptr->header.frame_id = "map";
   modified_map_pub_->publish(*map_msg_ptr);
   if (do_save_map) {pcl::io::savePCDFileASCII("map.pcd", *map_ptr);} // too heavy
 

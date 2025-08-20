@@ -155,9 +155,7 @@ private:
     bool use_odom_ {false};
     bool use_imu_ {false};
     bool debug_flag_ {false};
-  
-    std::string tf_namespace_;
-  
+
     // map
     Eigen::Vector3d previous_position_;
     double trans_;
