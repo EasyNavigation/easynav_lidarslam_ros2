@@ -79,12 +79,15 @@ add_executable(graph_based_slam_node
 src/graph_based_slam_node.cpp
 )
 
-target_link_libraries(graph_based_slam_node
-  graph_based_slam_component
+target_link_libraries(graph_based_slam_component
   ${PCL_LIBRARIES}
   g2o::core
   g2o::types_slam3d
   g2o::solver_eigen
+)
+
+target_link_libraries(graph_based_slam_node
+  graph_based_slam_component
 )
 
 ament_target_dependencies(graph_based_slam_node
