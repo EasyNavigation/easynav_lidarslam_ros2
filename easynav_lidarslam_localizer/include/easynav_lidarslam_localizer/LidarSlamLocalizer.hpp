@@ -24,7 +24,6 @@
 #define EASYNAV_LOCALIZER__LIDARSLAMLOCALIZER_HPP_
 
 #include <expected>
-
 #include "graph_based_slam/graph_based_slam_component.h"
 #include "scanmatcher/scanmatcher_component.h"
 

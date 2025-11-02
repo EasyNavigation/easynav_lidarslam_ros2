@@ -51,7 +51,7 @@ target_link_libraries(${PROJECT_NAME}
   easynav_core::easynav_core
   pluginlib::pluginlib
   ${geographic_msgs_TARGETS}
-  GeographicLib
+  ${GeographicLib_LIBRARIES}
   ${graph_based_slam_LIBRARIES}
   ${scanmatcher_LIBRARIES}
   ${GeographicLib_LIBRARIES}

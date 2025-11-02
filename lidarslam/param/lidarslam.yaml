@@ -1,7 +1,8 @@
 scan_matcher:
   ros__parameters:
+    use_sim_time: true
     global_frame_id: "map"
-    robot_frame_id: "base_link"
+    robot_frame_id: "base_footprint"
     registration_method: "NDT"
     ndt_resolution: 2.0
     ndt_num_threads: 2
@@ -29,6 +30,7 @@ scan_matcher:
 
 graph_based_slam:
     ros__parameters:
+      use_sim_time: true
       registration_method: "NDT"
       ndt_resolution: 1.0
       ndt_num_threads: 2
