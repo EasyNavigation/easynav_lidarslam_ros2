@@ -46,7 +46,7 @@ ScanMatcherComponent::ScanMatcherComponent(const rclcpp::NodeOptions & options)
   declare_parameter("scan_period", 0.1);
   get_parameter("scan_period", scan_period_);
   declare_parameter("map_publish_period", 15.0);
-  get_parameter("map_publish_period", map_publish_period_);  
+  get_parameter("map_publish_period", map_publish_period_);
   declare_parameter("num_targeted_cloud", 10);
   get_parameter("num_targeted_cloud", num_targeted_cloud_);
   if (num_targeted_cloud_ < 1) {
@@ -119,8 +119,8 @@ ScanMatcherComponent::ScanMatcherComponent(const rclcpp::NodeOptions & options)
     registration_ = ndt;
 
   } else if (registration_method_ == "GICP") {
-	  boost::shared_ptr<pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>>
-      gicp(new pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>());
+    boost::shared_ptr<pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>>
+    gicp(new pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>());
     gicp->setMaxCorrespondenceDistance(gicp_corr_dist_threshold);
     gicp->setTransformationEpsilon(1e-8);
     registration_ = gicp;
@@ -185,8 +185,7 @@ void ScanMatcherComponent::initializePubSub()
   auto cloud_callback =
     [this](const typename sensor_msgs::msg::PointCloud2::SharedPtr msg) -> void
     {
-      if (!initial_pose_received_)
-      {
+      if (!initial_pose_received_) {
         RCLCPP_WARN(get_logger(), "initial_pose is not received");
         return;
       }
@@ -265,7 +264,9 @@ void ScanMatcherComponent::initializePubSub()
   path_pub_ = create_publisher<nav_msgs::msg::Path>("path", rclcpp::QoS(10));
 }
 
-void ScanMatcherComponent::initializeMap(const pcl::PointCloud <pcl::PointXYZI>::Ptr & tmp_ptr, const std_msgs::msg::Header & header)
+void ScanMatcherComponent::initializeMap(
+  const pcl::PointCloud<pcl::PointXYZI>::Ptr & tmp_ptr,
+  const std_msgs::msg::Header & header)
 {
   RCLCPP_INFO(get_logger(), "create a first map");
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>());
@@ -337,20 +338,19 @@ void ScanMatcherComponent::receiveCloud(
   Eigen::Matrix4f sim_trans = getTransformation(current_pose_stamped_.pose);
 
   if (use_odom_) {
-      geometry_msgs::msg::TransformStamped odom_trans;
-      try {
-        rclcpp::Duration tolerance = rclcpp::Duration::from_seconds(0.2);
-        rclcpp::Time lookup_time = stamp - tolerance;
+    geometry_msgs::msg::TransformStamped odom_trans;
+    try {
+      rclcpp::Duration tolerance = rclcpp::Duration::from_seconds(0.2);
+      rclcpp::Time lookup_time = stamp - tolerance;
 
-        odom_trans = tfbuffer_.lookupTransform(
+      odom_trans = tfbuffer_.lookupTransform(
             odom_frame_id_, robot_frame_id_,
             tf2_ros::fromMsg(lookup_time),
             tf2::durationFromSec(0.5));
-      }
-      catch (tf2::TransformException &e) {
-        RCLCPP_WARN(this->get_logger(), "Odom TF error: %s", e.what());
-        return;
-      }
+    } catch (tf2::TransformException & e) {
+      RCLCPP_WARN(this->get_logger(), "Odom TF error: %s", e.what());
+      return;
+    }
     Eigen::Affine3d odom_affine = tf2::transformToEigen(odom_trans);
     Eigen::Matrix4f odom_mat = odom_affine.matrix().cast<float>();
     if (previous_odom_mat_ != Eigen::Matrix4f::Identity()) {
@@ -409,7 +409,7 @@ void ScanMatcherComponent::publishMapAndPose(
   Eigen::Quaterniond quat_eig(rot_mat);
   geometry_msgs::msg::Quaternion quat_msg = tf2::toMsg(quat_eig);
 
-  if(publish_tf_){
+  if(publish_tf_) {
     geometry_msgs::msg::TransformStamped base_to_map_msg;
     base_to_map_msg.header.stamp = stamp;
     base_to_map_msg.header.frame_id = global_frame_id_;
@@ -419,12 +419,11 @@ void ScanMatcherComponent::publishMapAndPose(
     base_to_map_msg.transform.translation.z = position.z();
     base_to_map_msg.transform.rotation = quat_msg;
 
-    if(use_odom_){
-        geometry_msgs::msg::TransformStamped odom_to_map_msg;
-        odom_to_map_msg = calculateMaptoOdomTransform(base_to_map_msg, stamp);
-        broadcaster_.sendTransform(odom_to_map_msg);
-    }
-    else{
+    if(use_odom_) {
+      geometry_msgs::msg::TransformStamped odom_to_map_msg;
+      odom_to_map_msg = calculateMaptoOdomTransform(base_to_map_msg, stamp);
+      broadcaster_.sendTransform(odom_to_map_msg);
+    } else {
       broadcaster_.sendTransform(base_to_map_msg);
     }
   }
@@ -546,13 +545,15 @@ void ScanMatcherComponent::receiveImu(const sensor_msgs::msg::Imu msg)
 
 }
 
-void ScanMatcherComponent::publishMap(const lidarslam_msgs::msg::MapArray & map_array_msg , const std::string & map_frame_id)
+void ScanMatcherComponent::publishMap(
+  const lidarslam_msgs::msg::MapArray & map_array_msg,
+  const std::string & map_frame_id)
 {
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   for (auto & submap : map_array_msg.submaps) {
     pcl::PointCloud<pcl::PointXYZI>::Ptr submap_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_submap_cloud_ptr(
-        new pcl::PointCloud<pcl::PointXYZI>);
+      new pcl::PointCloud<pcl::PointXYZI>);
     pcl::fromROSMsg(submap.cloud, *submap_cloud_ptr);
 
     Eigen::Affine3d affine;
@@ -572,7 +573,7 @@ void ScanMatcherComponent::publishMap(const lidarslam_msgs::msg::MapArray & map_
 }
 
 geometry_msgs::msg::TransformStamped ScanMatcherComponent::calculateMaptoOdomTransform(
-  const geometry_msgs::msg::TransformStamped &base_to_map_msg,
+  const geometry_msgs::msg::TransformStamped & base_to_map_msg,
   const rclcpp::Time stamp
 )
 {
@@ -592,7 +593,7 @@ geometry_msgs::msg::TransformStamped ScanMatcherComponent::calculateMaptoOdomTra
     tf2::impl::Converter<false, true>::convert(odom_to_map_tf.inverse(), odom_to_map_msg.transform);
 
     odom_to_map_msg.header.stamp = stamp;
-    odom_to_map_msg.header.frame_id = global_frame_id_ ;
+    odom_to_map_msg.header.frame_id = global_frame_id_;
     odom_to_map_msg.child_frame_id = odom_frame_id_;
   } catch (tf2::TransformException & e) {
     RCLCPP_ERROR(get_logger(), "Transform from base_link to odom failed: %s", e.what());

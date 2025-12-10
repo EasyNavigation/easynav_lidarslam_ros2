@@ -42,11 +42,12 @@ std::expected<void, std::string> LidarSlamLocalizer::on_initialize()
   node->get_parameter(plugin_name + ".imu", imu);
   node->get_parameter(plugin_name + ".robot_frame", robot_frame_);
 
+  const auto & tf_info = RTTFBuffer::getInstance()->get_tf_info();
 
   // Initialize the odometry message
   odom_.header.stamp = get_node()->now();
-  odom_.header.frame_id = get_tf_prefix() + "map";
-  odom_.child_frame_id = get_tf_prefix() + robot_frame_;
+  odom_.header.frame_id = tf_info.map_frame;
+  odom_.child_frame_id = tf_info.robot_frame;
 
   rclcpp::NodeOptions options_gb;
   options_gb.use_intra_process_comms(true);
@@ -60,6 +61,11 @@ std::expected<void, std::string> LidarSlamLocalizer::on_initialize()
   };
   options_sm.arguments(remappings);
   sm_comp_ = std::make_shared<graphslam::ScanMatcherComponent>(options_sm);
+
+  // Override internal scanmatcher frame configuration from TFInfo
+  sm_comp_->set_parameter(rclcpp::Parameter("global_frame_id", tf_info.map_frame));
+  sm_comp_->set_parameter(rclcpp::Parameter("robot_frame_id", tf_info.robot_frame));
+  sm_comp_->set_parameter(rclcpp::Parameter("odom_frame_id", tf_info.odom_frame));
 
   return {};
 }
@@ -76,8 +82,10 @@ void LidarSlamLocalizer::update(NavState & nav_state)
 
   geometry_msgs::msg::TransformStamped tf_msg;
   try {
+    const auto & tf_info = RTTFBuffer::getInstance()->get_tf_info();
+
     tf_msg = RTTFBuffer::getInstance()->lookupTransform(
-      "map", robot_frame_, tf2::TimePointZero, tf2::durationFromSec(0.0));
+      tf_info.map_frame, tf_info.robot_frame, tf2::TimePointZero, tf2::durationFromSec(0.0));
   } catch (const tf2::TransformException & ex) {
     RCLCPP_WARN(get_node()->get_logger(), "LidarSlamLocalizer::update: TF failed: %s", ex.what());
     return;

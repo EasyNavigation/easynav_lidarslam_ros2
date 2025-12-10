@@ -63,8 +63,8 @@ GraphBasedSlamComponent::GraphBasedSlamComponent(const rclcpp::NodeOptions & opt
   voxelgrid_.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
 
   if (registration_method == "NDT") {
-	  boost::shared_ptr<pclomp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>>
-      ndt(new pclomp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>());
+    boost::shared_ptr<pclomp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>>
+    ndt(new pclomp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>());
     ndt->setMaximumIterations(100);
     ndt->setResolution(ndt_resolution);
     ndt->setTransformationEpsilon(0.01);
@@ -73,8 +73,8 @@ GraphBasedSlamComponent::GraphBasedSlamComponent(const rclcpp::NodeOptions & opt
     if (ndt_num_threads > 0) {ndt->setNumThreads(ndt_num_threads);}
     registration_ = ndt;
   } else if (registration_method == "GICP") {
-	  boost::shared_ptr<pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>>
-      gicp(new pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>());
+    boost::shared_ptr<pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>>
+    gicp(new pclomp::GeneralizedIterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI>());
     gicp->setMaxCorrespondenceDistance(30);
     gicp->setMaximumIterations(100);
     //gicp->setCorrespondenceRandomness(20);
@@ -91,8 +91,8 @@ GraphBasedSlamComponent::GraphBasedSlamComponent(const rclcpp::NodeOptions & opt
 
   auto map_save_callback =
     [this](const std::shared_ptr<rmw_request_id_t> request_header,
-      const std::shared_ptr<std_srvs::srv::Empty::Request> request,
-      const std::shared_ptr<std_srvs::srv::Empty::Response> response) -> void
+    const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+    const std::shared_ptr<std_srvs::srv::Empty::Response> response) -> void
     {
       std::cout << "Received an request to save the map" << std::endl;
       if (initial_map_array_received_ == false) {
@@ -158,8 +158,7 @@ void GraphBasedSlamComponent::searchLoop()
   std::lock_guard<std::mutex> lock(mtx_);
   int num_submaps = map_array_msg.submaps.size();
 
-  if(debug_flag_)
-  {
+  if(debug_flag_) {
     RCLCPP_INFO(get_logger(), "searching Loop, num_submaps:%d", num_submaps);
   }
 
@@ -249,15 +248,18 @@ void GraphBasedSlamComponent::searchLoop()
       loop_edges_.push_back(loop_edge);
 
       std::cout << "---" << std::endl;
-      std::cout << "PoseAdjustment distance:" << min_submap.distance << ", score:" << fitness_score << std::endl;
-      std::cout << "id_loop_point 1:" << id_min << " id_loop_point 2:" << num_submaps - 1 << std::endl;
+      std::cout << "PoseAdjustment distance:" << min_submap.distance << ", score:" <<
+        fitness_score << std::endl;
+      std::cout << "id_loop_point 1:" << id_min << " id_loop_point 2:" << num_submaps - 1 <<
+        std::endl;
       std::cout << "final transformation:" << std::endl;
       std::cout << registration_->getFinalTransformation() << std::endl;
       doPoseAdjustment(map_array_msg, use_save_map_in_loop_);
 
       return;
     }
-    std::cout << "min_submap_distance:" << min_submap.distance << " min_fitness_score:" << fitness_score << std::endl;
+    std::cout << "min_submap_distance:" << min_submap.distance << " min_fitness_score:" <<
+      fitness_score << std::endl;
   }
 }
 

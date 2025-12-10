@@ -90,7 +90,7 @@ private:
     std::string robot_frame_id_;
     std::string odom_frame_id_;
 
-    boost::shared_ptr<pcl::Registration < pcl::PointXYZI, pcl::PointXYZI >> registration_;
+    boost::shared_ptr < pcl::Registration < pcl::PointXYZI, pcl::PointXYZI >> registration_;
 
     rclcpp::Subscription < geometry_msgs::msg::PoseStamped > ::SharedPtr initial_pose_sub_;
     rclcpp::Subscription < sensor_msgs::msg::Imu > ::SharedPtr imu_sub_;
@@ -114,9 +114,11 @@ private:
     rclcpp::Publisher < nav_msgs::msg::Path > ::SharedPtr path_pub_;
 
     void initializePubSub();
-    void initializeMap(const pcl::PointCloud <pcl::PointXYZI>::Ptr & cloud_ptr, const std_msgs::msg::Header & header);
+    void initializeMap(
+      const pcl::PointCloud < pcl::PointXYZI > ::Ptr & cloud_ptr,
+      const std_msgs::msg::Header & header);
     void receiveCloud(
-      const pcl::PointCloud < pcl::PointXYZI> ::ConstPtr & input_cloud_ptr,
+      const pcl::PointCloud < pcl::PointXYZI > ::ConstPtr & input_cloud_ptr,
       const rclcpp::Time stamp);
     void receiveImu(const sensor_msgs::msg::Imu imu_msg);
     void publishMapAndPose(
@@ -125,14 +127,16 @@ private:
       const rclcpp::Time stamp
     );
     Eigen::Matrix4f getTransformation(const geometry_msgs::msg::Pose pose);
-    void publishMap(const lidarslam_msgs::msg::MapArray & map_array_msg, const std::string & map_frame_id);
+    void publishMap(
+      const lidarslam_msgs::msg::MapArray & map_array_msg,
+      const std::string & map_frame_id);
     void updateMap(
       const pcl::PointCloud < pcl::PointXYZI > ::ConstPtr cloud_ptr,
       const Eigen::Matrix4f final_transformation,
       const geometry_msgs::msg::PoseStamped current_pose_stamped
     );
     geometry_msgs::msg::TransformStamped calculateMaptoOdomTransform(
-      const geometry_msgs::msg::TransformStamped &base_to_map_msg,
+      const geometry_msgs::msg::TransformStamped & base_to_map_msg,
       const rclcpp::Time stamp
     );
 
@@ -155,9 +159,9 @@ private:
     bool use_odom_ {false};
     bool use_imu_ {false};
     bool debug_flag_ {false};
-  
+
     std::string tf_prefix_;
-  
+
     // map
     Eigen::Vector3d previous_position_;
     double trans_;
